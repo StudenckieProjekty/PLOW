@@ -8,8 +8,16 @@
 #include <iostream>
 #include <time.h>
 #include <stdlib.h>
+#include "logic.h"
+#include "ui.h"
+#include "io.h"
 
 int main() {
+    srand(time(NULL));
+
+    struct board* board = (struct board*)malloc(sizeof(struct board));
+    initBoard();
+
     al_init_primitives_addon();
     al_init_image_addon();
     al_init_font_addon();
