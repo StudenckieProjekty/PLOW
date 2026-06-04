@@ -14,9 +14,11 @@ struct tile {
 };
 
 enum GameState {
-	Running = 0,
-	Won = 1,
-	Lost = 2
+	Menu = 0,
+	Running = 1,
+	Won = 2,
+	Lost = 3,
+	Exit = 4
 };
 
 struct board {
@@ -27,4 +29,8 @@ struct board {
 	enum GameState state;
 };
 
-void initBoard();
+void createBoard(struct board* board);
+
+void initBoardAfterFirstClick(struct board* board, int clickedX, int clickedY);
+
+void revealTile(struct board* board, int tileX, int tileY);
