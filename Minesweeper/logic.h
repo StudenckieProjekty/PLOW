@@ -32,6 +32,8 @@ struct board {
 	int width;
 	int height;
 	int minesNum;
+	int flagsPlacedNum;
+	int tilesRevealedNum;
 	enum GameState state;
 };
 

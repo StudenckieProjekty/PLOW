@@ -5,6 +5,7 @@ void initAllegro() {
     al_init();
     al_init_image_addon();
     al_install_mouse();
+    al_install_keyboard();
 }
 
 void drawBackground(ALLEGRO_BITMAP* bgImage) {
@@ -64,8 +65,7 @@ void drawMenu(struct board* board, ALLEGRO_BITMAP* bgImage, ALLEGRO_BITMAP* titl
     float titleCoordinateX = (SCREEN_WIDTH - titleWidth) / 2.0f;
     float titleCoordinateY = 15.0f;
 
-    al_draw_scaled_bitmap(titleImage, 0, 0, al_get_bitmap_width(titleImage), al_get_bitmap_height(titleImage),
-        titleCoordinateX, titleCoordinateY, titleWidth, titleHeight, 0);
+    al_draw_scaled_bitmap(titleImage, 0, 0, al_get_bitmap_width(titleImage), al_get_bitmap_height(titleImage), titleCoordinateX, titleCoordinateY, titleWidth, titleHeight, 0);
 
     ALLEGRO_MOUSE_STATE mouseState;
     al_get_mouse_state(&mouseState);
@@ -74,17 +74,16 @@ void drawMenu(struct board* board, ALLEGRO_BITMAP* bgImage, ALLEGRO_BITMAP* titl
     drawButton(quitButton, mouseState.x, mouseState.y);
 }
 
-void handleMenuClick(struct board* board, int mouseButton, float mouseX, float mouseY, struct UIButton* playBtn, struct UIButton* quitBtn, bool* bIsFirstClick) {
+void handleMenuClick(struct board* board, int mouseButton, float mouseX, float mouseY, struct UIButton* playBtn, struct UIButton* quitBtn) {
     if (mouseButton == 1 && bIsMouseWithinButton(mouseX, mouseY, playBtn)) {
         board->state = GameState::Running;
-        *bIsFirstClick = true;
     }
     else if (mouseButton == 1 && bIsMouseWithinButton(mouseX, mouseY, quitBtn)) {
         board->state = GameState::Exit;
     }
 }
 
-void drawBoard(struct board* board, ALLEGRO_BITMAP* bgImage, ALLEGRO_BITMAP* hiddenTile, ALLEGRO_BITMAP* revealedTiles[], ALLEGRO_BITMAP* questionTile, ALLEGRO_BITMAP* flaggedTile, ALLEGRO_BITMAP* mineTile) {
+void drawBoard(struct board* board, ALLEGRO_BITMAP* bgImage, ALLEGRO_BITMAP* hiddenTile, ALLEGRO_BITMAP* revealedTiles[], ALLEGRO_BITMAP* questionTile, ALLEGRO_BITMAP* flaggedTile, ALLEGRO_BITMAP* mineTile, ALLEGRO_BITMAP* wonText, ALLEGRO_BITMAP* lostText, ALLEGRO_BITMAP* subMessage) {
     drawBackground(bgImage);
 
     float boardWidthPx = board->width * TILE_SIZE;
@@ -135,6 +134,26 @@ void drawBoard(struct board* board, ALLEGRO_BITMAP* bgImage, ALLEGRO_BITMAP* hid
             }
         }
     }
+
+    if (board->state == GameState::Won || board->state == GameState::Lost) {
+        ALLEGRO_BITMAP* message = board->state == GameState::Won ? wonText : lostText;
+
+        float textScale = 0.25f;
+        float textWidth = al_get_bitmap_width(message) * textScale;
+        float textHeight = al_get_bitmap_height(message) * textScale;
+        float textCoordinateX = (SCREEN_WIDTH - textWidth) / 2.0f;
+        float textCoordinateY = 0;
+
+        al_draw_scaled_bitmap(message, 0, 0, al_get_bitmap_width(message), al_get_bitmap_height(message), textCoordinateX, textCoordinateY, textWidth, textHeight, 0);
+
+        float subMessageScale = 0.3225f;
+        float subMessageWidth = al_get_bitmap_width(subMessage) * subMessageScale;
+        float subMessageHeight = al_get_bitmap_height(subMessage) * subMessageScale;
+        float subMessageCoordinateX = (SCREEN_WIDTH - subMessageWidth) / 2.0f;
+        float subMessageCoordinateY = 70.f;
+
+        al_draw_scaled_bitmap(subMessage, 0, 0, al_get_bitmap_width(subMessage), al_get_bitmap_height(subMessage), subMessageCoordinateX, subMessageCoordinateY, subMessageWidth, subMessageHeight, 0);
+    }
 }
 
 void handleBoardClick(struct board* board, int mouseButton, float mouseX, float mouseY, bool* bIsFirstClick) {
@@ -166,10 +185,12 @@ void handleBoardClick(struct board* board, int mouseButton, float mouseX, float 
 
                     case TileState::Hidden:
                         board->matrix[i][j].state = TileState::Flagged;
+                        board->flagsPlacedNum += 1;
                         break;
 
                     case TileState::Flagged:
                         board->matrix[i][j].state = TileState::QuestionMarked;
+                        board->flagsPlacedNum -= 1;
                         break;
 
                     case TileState::QuestionMarked:

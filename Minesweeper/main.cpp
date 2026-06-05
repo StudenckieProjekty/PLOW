@@ -12,6 +12,9 @@ int main() {
     ALLEGRO_BITMAP* icon = al_load_bitmap("assets/images/icon.png");
     ALLEGRO_BITMAP* background = al_load_bitmap("assets/images/background.png");
     ALLEGRO_BITMAP* title = al_load_bitmap("assets/images/title.png");
+    ALLEGRO_BITMAP* wonText = al_load_bitmap("assets/images/won.png");
+    ALLEGRO_BITMAP* lostText = al_load_bitmap("assets/images/lost.png");
+    ALLEGRO_BITMAP* subMessage = al_load_bitmap("assets/images/subMessage.png");
     ALLEGRO_BITMAP* playButton = al_load_bitmap("assets/images/play.png");
     ALLEGRO_BITMAP* playButtonSelected = al_load_bitmap("assets/images/play_sel.png");
     ALLEGRO_BITMAP* quitButton = al_load_bitmap("assets/images/quit.png");
@@ -48,6 +51,7 @@ int main() {
     ALLEGRO_EVENT_QUEUE* eventQueue = al_create_event_queue();
     al_register_event_source(eventQueue, al_get_display_event_source(display));
     al_register_event_source(eventQueue, al_get_mouse_event_source());
+    al_register_event_source(eventQueue, al_get_keyboard_event_source());
 
     while (gameBoard->state != GameState::Exit) {
 
@@ -59,12 +63,24 @@ int main() {
             else if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
                 switch (gameBoard->state) {
                     case GameState::Menu:
-                        handleMenuClick(gameBoard, event.mouse.button, event.mouse.x, event.mouse.y, &btnPlay, &btnQuit, &bIsFirstClick);
+                        handleMenuClick(gameBoard, event.mouse.button, event.mouse.x, event.mouse.y, &btnPlay, &btnQuit);
                         break;
 
                     case GameState::Running:
                         handleBoardClick(gameBoard, event.mouse.button, event.mouse.x, event.mouse.y, &bIsFirstClick);
                         break;
+
+                    case GameState::Won:
+                    case GameState::Lost:
+                        createBoard(gameBoard);
+                        bIsFirstClick = true;
+                        break;
+                }
+            }
+            else if (event.type == ALLEGRO_EVENT_KEY_DOWN) {
+                if (gameBoard->state == GameState::Won || gameBoard->state == GameState::Lost) {
+                    createBoard(gameBoard);
+                    bIsFirstClick = true;
                 }
             }
         }
@@ -75,7 +91,9 @@ int main() {
                 break;
 
             case GameState::Running:
-                drawBoard(gameBoard, background, tileHidden, tileNumber, tileQM, tileFlagged, tileMine);
+            case GameState::Won:
+            case GameState::Lost:
+                drawBoard(gameBoard, background, tileHidden, tileNumber, tileQM, tileFlagged, tileMine, wonText, lostText, subMessage);
                 break;
         }
 
@@ -87,6 +105,9 @@ int main() {
     al_destroy_bitmap(icon);
     al_destroy_bitmap(background);
     al_destroy_bitmap(title);
+    al_destroy_bitmap(wonText);
+    al_destroy_bitmap(lostText);
+    al_destroy_bitmap(subMessage);
     al_destroy_bitmap(playButton);
     al_destroy_bitmap(playButtonSelected);
     al_destroy_bitmap(quitButton);
