@@ -1,4 +1,10 @@
 #pragma once
+#define SCREEN_WIDTH 1280
+#define SCREEN_HEIGHT 720
+
+#define BOARD_WIDTH 9
+#define BOARD_HEIGHT 9
+#define TILE_SIZE 64
 
 enum TileState {
 	Hidden = 0,
@@ -22,7 +28,7 @@ enum GameState {
 };
 
 struct board {
-	struct tile matrix[9][9];
+	struct tile matrix[BOARD_HEIGHT][BOARD_WIDTH];
 	int width;
 	int height;
 	int minesNum;

@@ -63,8 +63,8 @@ void setTileNumbers(struct board* board) {
 }
 
 void createBoard(struct board* board) {
-	board->height = 9;
-	board->width = 9;
+	board->height = BOARD_HEIGHT;
+	board->width = BOARD_WIDTH;
 	board->minesNum = getMinesToPlaceNum(board);
 	board->state = GameState::Menu;
 
@@ -93,7 +93,7 @@ void revealTile(struct board* board, int tileX, int tileY) {
 		return;
 	}
 
-	if (board->matrix[tileX][tileY].state == TileState::Revealed) {
+	if (board->matrix[tileX][tileY].state != TileState::Hidden) {
 		return;
 	}
 

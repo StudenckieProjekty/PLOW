@@ -5,12 +5,25 @@
 
 void initAllegro();
 
+struct UIButton {
+    ALLEGRO_BITMAP* image;
+    ALLEGRO_BITMAP* hoverImage;
+    float x;
+    float y;
+    float width;
+    float height;
+};
+
+struct UIButton createButton(ALLEGRO_BITMAP* image, ALLEGRO_BITMAP* hoverImage, float xCoordinate, float yCoordinate, float scale);
+
+struct UIButton createCenteredButton(ALLEGRO_BITMAP* image, ALLEGRO_BITMAP* hoverImage, float yCoordinate, float scale);
+
 void drawBackground(ALLEGRO_BITMAP* bgImage);
 
-void drawMenu(struct board* board, ALLEGRO_BITMAP* bgImage, ALLEGRO_BITMAP* titleImage,
-    ALLEGRO_BITMAP* playBtn, ALLEGRO_BITMAP* playSelBtn,
-    ALLEGRO_BITMAP* quitBtn, ALLEGRO_BITMAP* quitSelBtn);
+void drawMenu(struct board* board, ALLEGRO_BITMAP* bgImage, ALLEGRO_BITMAP* titleImage, struct UIButton* playButton, struct UIButton* quitButton);
 
-void drawBoard(struct board* board, ALLEGRO_BITMAP* bgImage, ALLEGRO_BITMAP* hiddenTile, ALLEGRO_BITMAP* revealedTiles[], ALLEGRO_BITMAP* mineTile);
+void handleMenuClick(struct board* board, int mouseButton, float mouseX, float mouseY, struct UIButton* playBtn, struct UIButton* quitBtn, bool* bIsFirstClick);
 
-void handleBoardClick(struct board* board, float mouseX, float mouseY, bool* bIsFirstClick);
+void drawBoard(struct board* board, ALLEGRO_BITMAP* bgImage, ALLEGRO_BITMAP* hiddenTile, ALLEGRO_BITMAP* revealedTiles[], ALLEGRO_BITMAP* questionTile, ALLEGRO_BITMAP* flaggedTile, ALLEGRO_BITMAP* mineTile);
+
+void handleBoardClick(struct board* board, int mouseButton, float mouseX, float mouseY, bool* bIsFirstClick);

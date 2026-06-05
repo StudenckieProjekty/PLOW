@@ -11,75 +11,87 @@ void drawBackground(ALLEGRO_BITMAP* bgImage) {
     al_draw_scaled_bitmap(
         bgImage,
         0, 0, al_get_bitmap_width(bgImage), al_get_bitmap_height(bgImage),
-        0, 0, 1280.0f, 720.0f,
+        0, 0, SCREEN_WIDTH, SCREEN_HEIGHT,
         0
     );
 }
 
-bool drawButtonCentered(ALLEGRO_BITMAP* image, ALLEGRO_BITMAP* hoverImage, float yCoordinate, float scale, ALLEGRO_MOUSE_STATE& mouseState) {
-    float imageWidth = al_get_bitmap_width(image);
-    float imageHeight = al_get_bitmap_height(image);
+struct UIButton createButton(ALLEGRO_BITMAP* image, ALLEGRO_BITMAP* hoverImage, float xCoordinate, float yCoordinate, float scale) {
+    struct UIButton btn;
+    btn.image = image;
+    btn.hoverImage = hoverImage;
 
-    float targetWidth = imageWidth * scale;
-    float targetHeight = imageHeight * scale;
+    btn.width = al_get_bitmap_width(image) * scale;
+    btn.height = al_get_bitmap_height(image) * scale;
 
-    float xCoordinate = (1280.0f - targetWidth) / 2.0f;
+    btn.x = xCoordinate;
+    btn.y = yCoordinate;
 
-    bool bIsHovered = (mouseState.x >= xCoordinate && mouseState.x <= xCoordinate + targetWidth && mouseState.y >= yCoordinate && mouseState.y <= yCoordinate + targetHeight);
+    return btn;
+}
 
-    ALLEGRO_BITMAP* bmpToDraw = bIsHovered ? hoverImage : image;
+struct UIButton createCenteredButton(ALLEGRO_BITMAP* image, ALLEGRO_BITMAP* hoverImage, float yCoordinate, float scale) {
+    float targetWidth = al_get_bitmap_width(image) * scale;
+    float xCoordinate = (SCREEN_WIDTH - targetWidth) / 2.0f;
+
+    return createButton(image, hoverImage, xCoordinate, yCoordinate, scale);
+}
+
+bool bIsMouseWithinButton(float mouseX, float mouseY, struct UIButton* button) {
+    return (mouseX >= button->x && mouseX <= button->x + button->width && mouseY >= button->y && mouseY <= button->y + button->height);
+}
+
+void drawButton(struct UIButton* button, float mouseX, float mouseY) {
+
+    bool bIsHovered = bIsMouseWithinButton(mouseX, mouseY, button);
+
+    ALLEGRO_BITMAP* bmpToDraw = bIsHovered ? button->hoverImage : button->image;
 
     al_draw_scaled_bitmap(
         bmpToDraw,
-        0, 0, imageWidth, imageHeight,
-        xCoordinate, yCoordinate, targetWidth, targetHeight,
+        0, 0, al_get_bitmap_width(bmpToDraw), al_get_bitmap_height(bmpToDraw),
+        button->x, button->y, button->width, button->height,
         0
     );
-
-    return bIsHovered;
 }
 
-void drawMenu(struct board* board, ALLEGRO_BITMAP* bgImage, ALLEGRO_BITMAP* titleImage, ALLEGRO_BITMAP* playBtn, ALLEGRO_BITMAP* playSelBtn, ALLEGRO_BITMAP* quitBtn, ALLEGRO_BITMAP* quitSelBtn) {
+void drawMenu(struct board* board, ALLEGRO_BITMAP* bgImage, ALLEGRO_BITMAP* titleImage, struct UIButton* playButton, struct UIButton* quitButton) {
     drawBackground(bgImage);
-
-    ALLEGRO_MOUSE_STATE mouseState;
-    al_get_mouse_state(&mouseState);
 
     float titleScale = 0.5f;
     float titleWidth = al_get_bitmap_width(titleImage) * titleScale;
     float titleHeight = al_get_bitmap_height(titleImage) * titleScale;
-    float titleCoordinateX = (1280.0f - titleWidth) / 2.0f;
+    float titleCoordinateX = (SCREEN_WIDTH - titleWidth) / 2.0f;
     float titleCoordinateY = 15.0f;
 
     al_draw_scaled_bitmap(titleImage, 0, 0, al_get_bitmap_width(titleImage), al_get_bitmap_height(titleImage),
         titleCoordinateX, titleCoordinateY, titleWidth, titleHeight, 0);
 
-    float buttonScale = 0.3f;
-    float playCoordinateY = titleCoordinateY + titleHeight;
-    bool bIsPlayHovered = drawButtonCentered(playBtn, playSelBtn, playCoordinateY, buttonScale, mouseState);
-    float quitCoordinateY = playCoordinateY + (al_get_bitmap_height(playBtn) * buttonScale) + 30.0f;
-    bool bIsQuitHovered = drawButtonCentered(quitBtn, quitSelBtn, quitCoordinateY, buttonScale, mouseState);
+    ALLEGRO_MOUSE_STATE mouseState;
+    al_get_mouse_state(&mouseState);
 
-    if (mouseState.buttons & 1) {
-        if (bIsPlayHovered) {
-            board->state = GameState::Running;
-        }
-        else if (bIsQuitHovered) {
-            board->state = GameState::Exit;
-        }
+    drawButton(playButton, mouseState.x, mouseState.y);
+    drawButton(quitButton, mouseState.x, mouseState.y);
+}
+
+void handleMenuClick(struct board* board, int mouseButton, float mouseX, float mouseY, struct UIButton* playBtn, struct UIButton* quitBtn, bool* bIsFirstClick) {
+    if (mouseButton == 1 && bIsMouseWithinButton(mouseX, mouseY, playBtn)) {
+        board->state = GameState::Running;
+        *bIsFirstClick = true;
+    }
+    else if (mouseButton == 1 && bIsMouseWithinButton(mouseX, mouseY, quitBtn)) {
+        board->state = GameState::Exit;
     }
 }
 
-void drawBoard(struct board* board, ALLEGRO_BITMAP* bgImage, ALLEGRO_BITMAP* hiddenTile, ALLEGRO_BITMAP* revealedTiles[], ALLEGRO_BITMAP* mineTile) {
+void drawBoard(struct board* board, ALLEGRO_BITMAP* bgImage, ALLEGRO_BITMAP* hiddenTile, ALLEGRO_BITMAP* revealedTiles[], ALLEGRO_BITMAP* questionTile, ALLEGRO_BITMAP* flaggedTile, ALLEGRO_BITMAP* mineTile) {
     drawBackground(bgImage);
 
-    float tileSize = 64.0f;
+    float boardWidthPx = board->width * TILE_SIZE;
+    float boardHeightPx = board->height * TILE_SIZE;
 
-    float boardWidthPx = board->width * tileSize;
-    float boardHeightPx = board->height * tileSize;
-
-    float startX = (1280.0f - boardWidthPx) / 2.0f;
-    float startY = 720.0f - boardHeightPx - 20.0f;
+    float startX = (SCREEN_WIDTH - boardWidthPx) / 2.0f;
+    float startY = SCREEN_HEIGHT - boardHeightPx - 20.0f;
 
     float srcW = al_get_bitmap_width(hiddenTile);
     float srcH = al_get_bitmap_height(hiddenTile);
@@ -87,51 +99,83 @@ void drawBoard(struct board* board, ALLEGRO_BITMAP* bgImage, ALLEGRO_BITMAP* hid
     for (int i = 0; i < board->height; i++) {
         for (int j = 0; j < board->width; j++) {
 
-            float currentX = startX + (j * tileSize);
-            float currentY = startY + (i * tileSize);
+            float currentX = startX + (j * TILE_SIZE);
+            float currentY = startY + (i * TILE_SIZE);
 
             ALLEGRO_BITMAP* bmpToDraw = nullptr;
 
-            if (board->matrix[i][j].state == TileState::Hidden) {
-                bmpToDraw = hiddenTile;
-            }
-            else if (board->matrix[i][j].state == TileState::Revealed) {
-                if (board->matrix[i][j].bHasMine) {
-                    bmpToDraw = mineTile;
-                }
-                else {
-                    bmpToDraw = revealedTiles[board->matrix[i][j].adjacentMinesNum];
-                }
+            switch (board->matrix[i][j].state) {
+                case TileState::Hidden:
+                    bmpToDraw = hiddenTile;
+                    break;
+
+                case TileState::Flagged:
+                    bmpToDraw = flaggedTile;
+                    break;
+
+                case TileState::QuestionMarked:
+                    bmpToDraw = questionTile;
+                    break;
+
+                case TileState::Revealed:
+                    if (board->matrix[i][j].bHasMine) {
+                        bmpToDraw = mineTile;
+                    }
+                    else {
+                        bmpToDraw = revealedTiles[board->matrix[i][j].adjacentMinesNum];
+                    }
+                    break;
             }
 
             if (bmpToDraw != nullptr) {
                 al_draw_scaled_bitmap(
                     bmpToDraw, 0, 0, srcW, srcH,
-                    currentX, currentY, tileSize, tileSize, 0
+                    currentX, currentY, TILE_SIZE, TILE_SIZE, 0
                 );
             }
         }
     }
 }
 
-void handleBoardClick(struct board* board, float mouseX, float mouseY, bool* bIsFirstClick) {
-    float tileSize = 64.0f;
-    float boardWidthPx = board->width * tileSize;
-    float boardHeightPx = board->height * tileSize;
+void handleBoardClick(struct board* board, int mouseButton, float mouseX, float mouseY, bool* bIsFirstClick) {
+    float boardWidthPx = board->width * TILE_SIZE;
+    float boardHeightPx = board->height * TILE_SIZE;
 
-    float startX = (1280.0f - boardWidthPx) / 2.0f;
-    float startY = 720.0f - boardHeightPx - 20.0f;
+    float startX = (SCREEN_WIDTH - boardWidthPx) / 2.0f;
+    float startY = SCREEN_HEIGHT - boardHeightPx - 20.0f;
 
     if (mouseX >= startX && mouseX < startX + boardWidthPx && mouseY >= startY && mouseY < startY + boardHeightPx) {
 
-        int j = (mouseX - startX) / tileSize;
-        int i = (mouseY - startY) / tileSize;
+        int j = (mouseX - startX) / TILE_SIZE;
+        int i = (mouseY - startY) / TILE_SIZE;
 
         if (*bIsFirstClick) {
             initBoardAfterFirstClick(board, i, j);
             *bIsFirstClick = false;
         }
 
-        revealTile(board, i, j);
+        switch (mouseButton) {
+            case 1:
+                revealTile(board, i, j);
+                break;
+
+            case 2:
+                switch (board->matrix[i][j].state) {
+                    case TileState::Revealed:
+                        break;
+
+                    case TileState::Hidden:
+                        board->matrix[i][j].state = TileState::Flagged;
+                        break;
+
+                    case TileState::Flagged:
+                        board->matrix[i][j].state = TileState::QuestionMarked;
+                        break;
+
+                    case TileState::QuestionMarked:
+                        board->matrix[i][j].state = TileState::Hidden;
+                        break;
+                }
+        }
     }
 }

@@ -8,28 +8,27 @@ int main() {
 
     srand(time(NULL));
 
-    ALLEGRO_DISPLAY* display = al_create_display(1280, 720);
-    ALLEGRO_BITMAP* windowIcon = al_load_bitmap("assets/images/icon.png");
-    ALLEGRO_BITMAP* bgImage = al_load_bitmap("assets/images/background.png");
-    ALLEGRO_BITMAP* titleImage = al_load_bitmap("assets/images/title.png");
-    ALLEGRO_BITMAP* playBtn = al_load_bitmap("assets/images/play.png");
-    ALLEGRO_BITMAP* playSelBtn = al_load_bitmap("assets/images/play_sel.png");
-    ALLEGRO_BITMAP* quitBtn = al_load_bitmap("assets/images/quit.png");
-    ALLEGRO_BITMAP* quitSelBtn = al_load_bitmap("assets/images/quit_sel.png");
-    ALLEGRO_BITMAP* hiddenTile = al_load_bitmap("assets/images/tiles/barrel_bottom_spruce.png");
-    ALLEGRO_BITMAP* revealedTiles[9];
-    revealedTiles[0] = al_load_bitmap("assets/images/tiles/barrel_bottom_oak.png");
-    revealedTiles[1] = al_load_bitmap("assets/images/tiles/barrel_bottom_oak_1.png");
-    revealedTiles[2] = al_load_bitmap("assets/images/tiles/barrel_bottom_oak_2.png");
-    revealedTiles[3] = al_load_bitmap("assets/images/tiles/barrel_bottom_oak_3.png");
-    revealedTiles[4] = al_load_bitmap("assets/images/tiles/barrel_bottom_oak_4.png");
-    revealedTiles[5] = al_load_bitmap("assets/images/tiles/barrel_bottom_oak_5.png");
-    revealedTiles[6] = al_load_bitmap("assets/images/tiles/barrel_bottom_oak_6.png");
-    revealedTiles[7] = al_load_bitmap("assets/images/tiles/barrel_bottom_oak_7.png");
-    revealedTiles[8] = al_load_bitmap("assets/images/tiles/barrel_bottom_oak_8.png");
-    ALLEGRO_BITMAP* mineTile = al_load_bitmap("assets/images/tiles/tnt.png");
+    ALLEGRO_DISPLAY* display = al_create_display(SCREEN_WIDTH, SCREEN_HEIGHT);
+    ALLEGRO_BITMAP* icon = al_load_bitmap("assets/images/icon.png");
+    ALLEGRO_BITMAP* background = al_load_bitmap("assets/images/background.png");
+    ALLEGRO_BITMAP* title = al_load_bitmap("assets/images/title.png");
+    ALLEGRO_BITMAP* playButton = al_load_bitmap("assets/images/play.png");
+    ALLEGRO_BITMAP* playButtonSelected = al_load_bitmap("assets/images/play_sel.png");
+    ALLEGRO_BITMAP* quitButton = al_load_bitmap("assets/images/quit.png");
+    ALLEGRO_BITMAP* quitButtonSelected = al_load_bitmap("assets/images/quit_sel.png");
+    ALLEGRO_BITMAP* tileHidden = al_load_bitmap("assets/images/tiles/barrel_bottom_spruce.png");
+    ALLEGRO_BITMAP* tileQM = al_load_bitmap("assets/images/tiles/barrel_bottom_spruce_qm.png");
+    ALLEGRO_BITMAP* tileFlagged = al_load_bitmap("assets/images/tiles/barrel_bottom_spruce_flag.png");
+    ALLEGRO_BITMAP* tileMine = al_load_bitmap("assets/images/tiles/tnt.png");
 
-    al_set_display_icon(display, windowIcon);
+    char filepath[] = "assets/images/tiles/barrel_bottom_oak_0.png";
+    ALLEGRO_BITMAP* tileNumber[9];
+    for (int i = 0; i <= 8; i++) {
+        filepath[38] = '0' + i;
+        tileNumber[i] = al_load_bitmap(filepath);
+    }
+
+    al_set_display_icon(display, icon);
 
     bool bIsFirstClick = true;
 
@@ -38,6 +37,13 @@ int main() {
         return -1;
     }
     createBoard(gameBoard);
+
+    float titleHeight = al_get_bitmap_height(title) * 0.5f;
+    float playY = 15.0f + titleHeight;
+    float quitY = playY + (al_get_bitmap_height(playButton) * 0.3f) + 30.0f;
+
+    struct UIButton btnPlay = createCenteredButton(playButton, playButtonSelected, playY, 0.3f);
+    struct UIButton btnQuit = createCenteredButton(quitButton, quitButtonSelected, quitY, 0.3f);
 
     ALLEGRO_EVENT_QUEUE* eventQueue = al_create_event_queue();
     al_register_event_source(eventQueue, al_get_display_event_source(display));
@@ -51,21 +57,25 @@ int main() {
                 gameBoard->state = GameState::Exit;
             }
             else if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
-                if (event.mouse.button == 1) {
-                    if (gameBoard->state == GameState::Running) {
-                        handleBoardClick(gameBoard, event.mouse.x, event.mouse.y, &bIsFirstClick);
-                    }
+                switch (gameBoard->state) {
+                    case GameState::Menu:
+                        handleMenuClick(gameBoard, event.mouse.button, event.mouse.x, event.mouse.y, &btnPlay, &btnQuit, &bIsFirstClick);
+                        break;
+
+                    case GameState::Running:
+                        handleBoardClick(gameBoard, event.mouse.button, event.mouse.x, event.mouse.y, &bIsFirstClick);
+                        break;
                 }
             }
         }
 
         switch (gameBoard->state) {
             case GameState::Menu:
-                drawMenu(gameBoard, bgImage, titleImage, playBtn, playSelBtn, quitBtn, quitSelBtn);
+                drawMenu(gameBoard, background, title, &btnPlay, &btnQuit);
                 break;
 
             case GameState::Running:
-                drawBoard(gameBoard, bgImage, hiddenTile, revealedTiles, mineTile);
+                drawBoard(gameBoard, background, tileHidden, tileNumber, tileQM, tileFlagged, tileMine);
                 break;
         }
 
@@ -74,10 +84,20 @@ int main() {
     }
 
     al_destroy_event_queue(eventQueue);
-    al_destroy_bitmap(bgImage);
-    al_destroy_bitmap(titleImage);
-    al_destroy_bitmap(windowIcon);
-    al_destroy_bitmap(hiddenTile);
+    al_destroy_bitmap(icon);
+    al_destroy_bitmap(background);
+    al_destroy_bitmap(title);
+    al_destroy_bitmap(playButton);
+    al_destroy_bitmap(playButtonSelected);
+    al_destroy_bitmap(quitButton);
+    al_destroy_bitmap(quitButtonSelected);
+    al_destroy_bitmap(tileHidden);
+    al_destroy_bitmap(tileQM);
+    al_destroy_bitmap(tileFlagged);
+    al_destroy_bitmap(tileMine);
+    for (int i = 0; i <= 8; i++) {
+        al_destroy_bitmap(tileNumber[i]);
+    }
     al_destroy_display(display);
 
     free(gameBoard);
