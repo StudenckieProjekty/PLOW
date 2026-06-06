@@ -23,6 +23,8 @@ int main() {
     ALLEGRO_BITMAP* tileQM = al_load_bitmap("assets/images/tiles/barrel_bottom_spruce_qm.png");
     ALLEGRO_BITMAP* tileFlagged = al_load_bitmap("assets/images/tiles/barrel_bottom_spruce_flag.png");
     ALLEGRO_BITMAP* tileMine = al_load_bitmap("assets/images/tiles/tnt.png");
+    ALLEGRO_BITMAP* clockIcon = al_load_bitmap("assets/images/clock.png");
+    ALLEGRO_FONT* mcFont = al_load_ttf_font("assets/fonts/mine.otf", 36, 0);
 
     char filepath[] = "assets/images/tiles/barrel_bottom_oak_0.png";
     ALLEGRO_BITMAP* tileNumber[9];
@@ -85,6 +87,14 @@ int main() {
             }
         }
 
+        if (gameBoard->timeCounter < 9999 && gameBoard->state == GameState::Running && !bIsFirstClick) {
+            gameBoard->frameCounter += 1;
+            if (gameBoard->frameCounter >= 24) {
+                gameBoard->timeCounter += 1;
+                gameBoard->frameCounter = 0;
+            }
+        }
+
         switch (gameBoard->state) {
             case GameState::Menu:
                 drawMenu(gameBoard, background, title, &btnPlay, &btnQuit);
@@ -93,7 +103,7 @@ int main() {
             case GameState::Running:
             case GameState::Won:
             case GameState::Lost:
-                drawBoard(gameBoard, background, tileHidden, tileNumber, tileQM, tileFlagged, tileMine, wonText, lostText, subMessage);
+                drawBoard(gameBoard, background, tileHidden, tileNumber, tileQM, tileFlagged, tileMine, wonText, lostText, subMessage, clockIcon, mcFont);
                 break;
         }
 
@@ -116,9 +126,11 @@ int main() {
     al_destroy_bitmap(tileQM);
     al_destroy_bitmap(tileFlagged);
     al_destroy_bitmap(tileMine);
+    al_destroy_bitmap(clockIcon);
     for (int i = 0; i <= 8; i++) {
         al_destroy_bitmap(tileNumber[i]);
     }
+    al_destroy_font(mcFont);
     al_destroy_display(display);
 
     free(gameBoard);

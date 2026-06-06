@@ -6,6 +6,20 @@ void initAllegro() {
     al_init_image_addon();
     al_install_mouse();
     al_install_keyboard();
+    al_init_font_addon();
+    al_init_ttf_addon();
+}
+
+void drawTextWithOutline(ALLEGRO_FONT* font, ALLEGRO_COLOR textColor, ALLEGRO_COLOR outlineColor, float x, float y, int flags, const char* text) {
+    al_draw_text(font, outlineColor, x - 3, y - 3, flags, text);
+    al_draw_text(font, outlineColor, x, y - 3, flags, text);
+    al_draw_text(font, outlineColor, x + 3, y - 3, flags, text);
+    al_draw_text(font, outlineColor, x - 3, y, flags, text);
+    al_draw_text(font, outlineColor, x + 3, y, flags, text);
+    al_draw_text(font, outlineColor, x - 3, y + 3, flags, text);
+    al_draw_text(font, outlineColor, x, y + 3, flags, text);
+    al_draw_text(font, outlineColor, x + 3, y + 3, flags, text);
+    al_draw_text(font, textColor, x, y, flags, text);
 }
 
 void drawBackground(ALLEGRO_BITMAP* bgImage) {
@@ -48,12 +62,7 @@ void drawButton(struct UIButton* button, float mouseX, float mouseY) {
 
     ALLEGRO_BITMAP* bmpToDraw = bIsHovered ? button->hoverImage : button->image;
 
-    al_draw_scaled_bitmap(
-        bmpToDraw,
-        0, 0, al_get_bitmap_width(bmpToDraw), al_get_bitmap_height(bmpToDraw),
-        button->x, button->y, button->width, button->height,
-        0
-    );
+    al_draw_scaled_bitmap(bmpToDraw, 0, 0, al_get_bitmap_width(bmpToDraw), al_get_bitmap_height(bmpToDraw), button->x, button->y, button->width, button->height, 0);
 }
 
 void drawMenu(struct board* board, ALLEGRO_BITMAP* bgImage, ALLEGRO_BITMAP* titleImage, struct UIButton* playButton, struct UIButton* quitButton) {
@@ -83,7 +92,7 @@ void handleMenuClick(struct board* board, int mouseButton, float mouseX, float m
     }
 }
 
-void drawBoard(struct board* board, ALLEGRO_BITMAP* bgImage, ALLEGRO_BITMAP* hiddenTile, ALLEGRO_BITMAP* revealedTiles[], ALLEGRO_BITMAP* questionTile, ALLEGRO_BITMAP* flaggedTile, ALLEGRO_BITMAP* mineTile, ALLEGRO_BITMAP* wonText, ALLEGRO_BITMAP* lostText, ALLEGRO_BITMAP* subMessage) {
+void drawBoard(struct board* board, ALLEGRO_BITMAP* bgImage, ALLEGRO_BITMAP* hiddenTile, ALLEGRO_BITMAP* revealedTiles[], ALLEGRO_BITMAP* questionTile, ALLEGRO_BITMAP* flaggedTile, ALLEGRO_BITMAP* mineTile, ALLEGRO_BITMAP* wonText, ALLEGRO_BITMAP* lostText, ALLEGRO_BITMAP* subMessage, ALLEGRO_BITMAP* clockIcon, ALLEGRO_FONT* mcFont) {
     drawBackground(bgImage);
 
     float boardWidthPx = board->width * TILE_SIZE;
@@ -127,13 +136,35 @@ void drawBoard(struct board* board, ALLEGRO_BITMAP* bgImage, ALLEGRO_BITMAP* hid
             }
 
             if (bmpToDraw != nullptr) {
-                al_draw_scaled_bitmap(
-                    bmpToDraw, 0, 0, srcW, srcH,
-                    currentX, currentY, TILE_SIZE, TILE_SIZE, 0
-                );
+                al_draw_scaled_bitmap(bmpToDraw, 0, 0, srcW, srcH, currentX, currentY, TILE_SIZE, TILE_SIZE, 0);
             }
         }
     }
+
+    ALLEGRO_COLOR white = al_map_rgb(255, 255, 255);
+    ALLEGRO_COLOR black = al_map_rgb(0, 0, 0);
+    float iconScale = 0.5f;
+
+    float clockW = al_get_bitmap_width(clockIcon) * iconScale;
+    float clockH = al_get_bitmap_height(clockIcon) * iconScale;
+    float clockX = startX - clockW - 140.0f;
+    float hudY = startY + boardHeightPx - clockH;
+    al_draw_scaled_bitmap(clockIcon, 0, 0, al_get_bitmap_width(clockIcon), al_get_bitmap_height(clockIcon), clockX, hudY, clockW, clockH, 0);
+
+    char timeStr[5];
+    snprintf(timeStr, sizeof(timeStr), "%d", board->timeCounter);
+    float textYOffset = (clockH - al_get_font_line_height(mcFont)) / 2.0f;
+    drawTextWithOutline(mcFont, white, black, clockX + clockW + 20.0f, hudY + textYOffset, ALLEGRO_ALIGN_LEFT, timeStr);
+
+    float tntW = al_get_bitmap_width(mineTile) * iconScale;
+    float tntH = al_get_bitmap_height(mineTile) * iconScale;
+    float tntX = startX + boardWidthPx + 140.0f;
+    al_draw_scaled_bitmap(mineTile, 0, 0, al_get_bitmap_width(mineTile), al_get_bitmap_height(mineTile), tntX, hudY, tntW, tntH, 0);
+
+    int remainingMines = board->minesNum - board->flagsPlacedNum;
+    char minesStr[4];
+    snprintf(minesStr, sizeof(minesStr), "%d", remainingMines);
+    drawTextWithOutline(mcFont, white, black, tntX - 20.0f, hudY + textYOffset, ALLEGRO_ALIGN_RIGHT, minesStr);
 
     if (board->state == GameState::Won || board->state == GameState::Lost) {
         ALLEGRO_BITMAP* message = board->state == GameState::Won ? wonText : lostText;
@@ -168,13 +199,12 @@ void handleBoardClick(struct board* board, int mouseButton, float mouseX, float 
         int j = (mouseX - startX) / TILE_SIZE;
         int i = (mouseY - startY) / TILE_SIZE;
 
-        if (*bIsFirstClick) {
-            initBoardAfterFirstClick(board, i, j);
-            *bIsFirstClick = false;
-        }
-
         switch (mouseButton) {
             case 1:
+                if (*bIsFirstClick) {
+                    initBoardAfterFirstClick(board, i, j);
+                    *bIsFirstClick = false;
+                }
                 revealTile(board, i, j);
                 break;
 

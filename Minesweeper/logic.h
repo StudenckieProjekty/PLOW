@@ -1,7 +1,6 @@
 #pragma once
 #define SCREEN_WIDTH 1280
 #define SCREEN_HEIGHT 720
-
 #define BOARD_WIDTH 9
 #define BOARD_HEIGHT 9
 #define TILE_SIZE 64
@@ -34,6 +33,8 @@ struct board {
 	int minesNum;
 	int flagsPlacedNum;
 	int tilesRevealedNum;
+	int frameCounter;
+	int timeCounter;
 	enum GameState state;
 };
 

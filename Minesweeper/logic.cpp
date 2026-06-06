@@ -69,6 +69,8 @@ void createBoard(struct board* board) {
 	board->minesNum = getMinesToPlaceNum(board);
 	board->flagsPlacedNum = 0;
 	board->tilesRevealedNum = 0;
+	board->frameCounter = 0;
+	board->timeCounter = 0;
 	board->state = GameState::Menu;
 
 	setDefaultTileValues(board);
@@ -82,7 +84,7 @@ void initBoardAfterFirstClick(struct board* board, int clickedX, int clickedY) {
 void revealAllMines(struct board* board) {
 	for (int i = 0; i < board->height; i++) {
 		for (int j = 0; j < board->width; j++) {
-			if (!board->matrix[i][j].bHasMine) {
+			if (!board->matrix[i][j].bHasMine || board->matrix[i][j].state != TileState::Hidden) {
 				continue;
 			}
 			board->matrix[i][j].state = TileState::Revealed;
@@ -91,13 +93,13 @@ void revealAllMines(struct board* board) {
 }
 
 void revealTile(struct board* board, int tileX, int tileY) {
-	if (board->matrix[tileX][tileY].bHasMine) {
-		revealAllMines(board);
-		board->state = GameState::Lost;
+	if (board->matrix[tileX][tileY].state != TileState::Hidden) {
 		return;
 	}
 
-	if (board->matrix[tileX][tileY].state != TileState::Hidden) {
+	if (board->matrix[tileX][tileY].bHasMine) {
+		revealAllMines(board);
+		board->state = GameState::Lost;
 		return;
 	}
 
