@@ -5,7 +5,7 @@
 void setDefaultTileValues(struct board* board) {
 	for (int i = 0; i < board->height; i++) {
 		for (int j = 0; j < board->width; j++) {
-			board->matrix[i][j].state = TileState::Hidden;
+			board->matrix[i][j].state = Hidden;
 			board->matrix[i][j].bHasMine = false;
 			board->matrix[i][j].adjacentMinesNum = 0;
 		}
@@ -13,7 +13,7 @@ void setDefaultTileValues(struct board* board) {
 }
 
 int getMinesToPlaceNum(struct board* board) {
-	return int((board->height * board->width) * 0.15);
+	return (int)((board->height * board->width) * 0.15);
 }
 
 void placeMinesOnBoard(struct board* board, int clickedX, int clickedY) {
@@ -71,7 +71,7 @@ void createBoard(struct board* board) {
 	board->tilesRevealedNum = 0;
 	board->frameCounter = 0;
 	board->timeCounter = 0;
-	board->state = GameState::Menu;
+	board->state = Menu;
 
 	setDefaultTileValues(board);
 }
@@ -84,30 +84,30 @@ void initBoardAfterFirstClick(struct board* board, int clickedX, int clickedY) {
 void revealAllMines(struct board* board) {
 	for (int i = 0; i < board->height; i++) {
 		for (int j = 0; j < board->width; j++) {
-			if (!board->matrix[i][j].bHasMine || board->matrix[i][j].state != TileState::Hidden) {
+			if (!board->matrix[i][j].bHasMine || board->matrix[i][j].state != Hidden) {
 				continue;
 			}
-			board->matrix[i][j].state = TileState::Revealed;
+			board->matrix[i][j].state = Revealed;
 		}
 	}
 }
 
 void revealTile(struct board* board, int tileX, int tileY) {
-	if (board->matrix[tileX][tileY].state != TileState::Hidden) {
+	if (board->matrix[tileX][tileY].state != Hidden) {
 		return;
 	}
 
 	if (board->matrix[tileX][tileY].bHasMine) {
 		revealAllMines(board);
-		board->state = GameState::Lost;
+		board->state = Lost;
 		return;
 	}
 
-	board->matrix[tileX][tileY].state = TileState::Revealed;
+	board->matrix[tileX][tileY].state = Revealed;
 	board->tilesRevealedNum += 1;
 
 	if (board->width * board->height - board->tilesRevealedNum - board->minesNum == 0) {
-		board->state = GameState::Won;
+		board->state = Won;
 		return;
 	}
 

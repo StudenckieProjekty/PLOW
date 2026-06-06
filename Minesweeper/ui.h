@@ -1,4 +1,5 @@
 #pragma once
+#include <stdbool.h>
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_image.h>
 #include <allegro5/allegro_font.h>
@@ -20,12 +21,12 @@ struct UIButton createButton(ALLEGRO_BITMAP* image, ALLEGRO_BITMAP* hoverImage, 
 
 struct UIButton createCenteredButton(ALLEGRO_BITMAP* image, ALLEGRO_BITMAP* hoverImage, float yCoordinate, float scale);
 
-void drawBackground(ALLEGRO_BITMAP* bgImage);
+void drawBackground(ALLEGRO_BITMAP* backgroundImage);
 
-void drawMenu(struct board* board, ALLEGRO_BITMAP* bgImage, ALLEGRO_BITMAP* titleImage, struct UIButton* playButton, struct UIButton* quitButton);
+void drawMenu(struct board* board, ALLEGRO_BITMAP* backgroundImage, ALLEGRO_BITMAP* titleImage, struct UIButton* playButton, struct UIButton* quitButton);
 
-void handleMenuClick(struct board* board, int mouseButton, float mouseX, float mouseY, struct UIButton* playBtn, struct UIButton* quitBtn);
+void handleMenuClick(struct board* board, int mouseButton, float mouseX, float mouseY, struct UIButton* playButton, struct UIButton* quitButton);
 
-void drawBoard(struct board* board, ALLEGRO_BITMAP* bgImage, ALLEGRO_BITMAP* hiddenTile, ALLEGRO_BITMAP* revealedTiles[], ALLEGRO_BITMAP* questionTile, ALLEGRO_BITMAP* flaggedTile, ALLEGRO_BITMAP* mineTile, ALLEGRO_BITMAP* wonText, ALLEGRO_BITMAP* lostText, ALLEGRO_BITMAP* subMessage, ALLEGRO_BITMAP* clockIcon, ALLEGRO_FONT* mcFont);
+void drawBoard(struct board* board, ALLEGRO_BITMAP* backgroundImage, ALLEGRO_BITMAP* hiddenTile, ALLEGRO_BITMAP* revealedTiles[], ALLEGRO_BITMAP* questionTile, ALLEGRO_BITMAP* flaggedTile, ALLEGRO_BITMAP* mineTile, ALLEGRO_BITMAP* wonText, ALLEGRO_BITMAP* lostText, ALLEGRO_BITMAP* subMessage, ALLEGRO_BITMAP* clockTile, ALLEGRO_FONT* pixelFont);
 
 void handleBoardClick(struct board* board, int mouseButton, float mouseX, float mouseY, bool* bIsFirstClick);

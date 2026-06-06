@@ -15,22 +15,22 @@ int main() {
     ALLEGRO_BITMAP* wonText = al_load_bitmap("assets/images/won.png");
     ALLEGRO_BITMAP* lostText = al_load_bitmap("assets/images/lost.png");
     ALLEGRO_BITMAP* subMessage = al_load_bitmap("assets/images/subMessage.png");
-    ALLEGRO_BITMAP* playButton = al_load_bitmap("assets/images/play.png");
+    ALLEGRO_BITMAP* playButtonImage = al_load_bitmap("assets/images/play.png");
     ALLEGRO_BITMAP* playButtonSelected = al_load_bitmap("assets/images/play_sel.png");
-    ALLEGRO_BITMAP* quitButton = al_load_bitmap("assets/images/quit.png");
+    ALLEGRO_BITMAP* quitButtonImage = al_load_bitmap("assets/images/quit.png");
     ALLEGRO_BITMAP* quitButtonSelected = al_load_bitmap("assets/images/quit_sel.png");
-    ALLEGRO_BITMAP* tileHidden = al_load_bitmap("assets/images/tiles/barrel_bottom_spruce.png");
-    ALLEGRO_BITMAP* tileQM = al_load_bitmap("assets/images/tiles/barrel_bottom_spruce_qm.png");
-    ALLEGRO_BITMAP* tileFlagged = al_load_bitmap("assets/images/tiles/barrel_bottom_spruce_flag.png");
-    ALLEGRO_BITMAP* tileMine = al_load_bitmap("assets/images/tiles/tnt.png");
-    ALLEGRO_BITMAP* clockIcon = al_load_bitmap("assets/images/clock.png");
-    ALLEGRO_FONT* mcFont = al_load_ttf_font("assets/fonts/mine.otf", 36, 0);
+    ALLEGRO_BITMAP* hiddenTile = al_load_bitmap("assets/images/tiles/barrel_bottom_spruce.png");
+    ALLEGRO_BITMAP* questionTile = al_load_bitmap("assets/images/tiles/barrel_bottom_spruce_qm.png");
+    ALLEGRO_BITMAP* flaggedTile = al_load_bitmap("assets/images/tiles/barrel_bottom_spruce_flag.png");
+    ALLEGRO_BITMAP* mineTile = al_load_bitmap("assets/images/tiles/tnt.png");
+    ALLEGRO_BITMAP* clockTile = al_load_bitmap("assets/images/tiles/clock.png");
+    ALLEGRO_FONT* pixelFont = al_load_ttf_font("assets/fonts/mine.otf", 36, 0);
 
     char filepath[] = "assets/images/tiles/barrel_bottom_oak_0.png";
-    ALLEGRO_BITMAP* tileNumber[9];
+    ALLEGRO_BITMAP* revealedTiles[9];
     for (int i = 0; i <= 8; i++) {
         filepath[38] = '0' + i;
-        tileNumber[i] = al_load_bitmap(filepath);
+        revealedTiles[i] = al_load_bitmap(filepath);
     }
 
     al_set_display_icon(display, icon);
@@ -45,49 +45,49 @@ int main() {
 
     float titleHeight = al_get_bitmap_height(title) * 0.5f;
     float playY = 15.0f + titleHeight;
-    float quitY = playY + (al_get_bitmap_height(playButton) * 0.3f) + 30.0f;
+    float quitY = playY + (al_get_bitmap_height(playButtonImage) * 0.3f) + 30.0f;
 
-    struct UIButton btnPlay = createCenteredButton(playButton, playButtonSelected, playY, 0.3f);
-    struct UIButton btnQuit = createCenteredButton(quitButton, quitButtonSelected, quitY, 0.3f);
+    struct UIButton playButton = createCenteredButton(playButtonImage, playButtonSelected, playY, 0.3f);
+    struct UIButton quitButton = createCenteredButton(quitButtonImage, quitButtonSelected, quitY, 0.3f);
 
     ALLEGRO_EVENT_QUEUE* eventQueue = al_create_event_queue();
     al_register_event_source(eventQueue, al_get_display_event_source(display));
     al_register_event_source(eventQueue, al_get_mouse_event_source());
     al_register_event_source(eventQueue, al_get_keyboard_event_source());
 
-    while (gameBoard->state != GameState::Exit) {
+    while (gameBoard->state != Exit) {
 
         ALLEGRO_EVENT event;
         while (al_get_next_event(eventQueue, &event)) {
             if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
-                gameBoard->state = GameState::Exit;
+                gameBoard->state = Exit;
             }
             else if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
                 switch (gameBoard->state) {
-                    case GameState::Menu:
-                        handleMenuClick(gameBoard, event.mouse.button, event.mouse.x, event.mouse.y, &btnPlay, &btnQuit);
+                    case Menu:
+                        handleMenuClick(gameBoard, event.mouse.button, event.mouse.x, event.mouse.y, &playButton, &quitButton);
                         break;
 
-                    case GameState::Running:
+                    case Running:
                         handleBoardClick(gameBoard, event.mouse.button, event.mouse.x, event.mouse.y, &bIsFirstClick);
                         break;
 
-                    case GameState::Won:
-                    case GameState::Lost:
+                    case Won:
+                    case Lost:
                         createBoard(gameBoard);
                         bIsFirstClick = true;
                         break;
                 }
             }
             else if (event.type == ALLEGRO_EVENT_KEY_DOWN) {
-                if (gameBoard->state == GameState::Won || gameBoard->state == GameState::Lost) {
+                if (gameBoard->state == Won || gameBoard->state == Lost) {
                     createBoard(gameBoard);
                     bIsFirstClick = true;
                 }
             }
         }
 
-        if (gameBoard->timeCounter < 9999 && gameBoard->state == GameState::Running && !bIsFirstClick) {
+        if (gameBoard->timeCounter < 9999 && gameBoard->state == Running && !bIsFirstClick) {
             gameBoard->frameCounter += 1;
             if (gameBoard->frameCounter >= 24) {
                 gameBoard->timeCounter += 1;
@@ -96,14 +96,14 @@ int main() {
         }
 
         switch (gameBoard->state) {
-            case GameState::Menu:
-                drawMenu(gameBoard, background, title, &btnPlay, &btnQuit);
+            case Menu:
+                drawMenu(gameBoard, background, title, &playButton, &quitButton);
                 break;
 
-            case GameState::Running:
-            case GameState::Won:
-            case GameState::Lost:
-                drawBoard(gameBoard, background, tileHidden, tileNumber, tileQM, tileFlagged, tileMine, wonText, lostText, subMessage, clockIcon, mcFont);
+            case Running:
+            case Won:
+            case Lost:
+                drawBoard(gameBoard, background, hiddenTile, revealedTiles, questionTile, flaggedTile, mineTile, wonText, lostText, subMessage, clockTile, pixelFont);
                 break;
         }
 
@@ -118,19 +118,19 @@ int main() {
     al_destroy_bitmap(wonText);
     al_destroy_bitmap(lostText);
     al_destroy_bitmap(subMessage);
-    al_destroy_bitmap(playButton);
+    al_destroy_bitmap(playButtonImage);
     al_destroy_bitmap(playButtonSelected);
-    al_destroy_bitmap(quitButton);
+    al_destroy_bitmap(quitButtonImage);
     al_destroy_bitmap(quitButtonSelected);
-    al_destroy_bitmap(tileHidden);
-    al_destroy_bitmap(tileQM);
-    al_destroy_bitmap(tileFlagged);
-    al_destroy_bitmap(tileMine);
-    al_destroy_bitmap(clockIcon);
+    al_destroy_bitmap(hiddenTile);
+    al_destroy_bitmap(questionTile);
+    al_destroy_bitmap(flaggedTile);
+    al_destroy_bitmap(mineTile);
+    al_destroy_bitmap(clockTile);
     for (int i = 0; i <= 8; i++) {
-        al_destroy_bitmap(tileNumber[i]);
+        al_destroy_bitmap(revealedTiles[i]);
     }
-    al_destroy_font(mcFont);
+    al_destroy_font(pixelFont);
     al_destroy_display(display);
 
     free(gameBoard);

@@ -1,4 +1,6 @@
 #pragma once
+#include <stdbool.h>
+
 #define SCREEN_WIDTH 1280
 #define SCREEN_HEIGHT 720
 #define BOARD_WIDTH 9

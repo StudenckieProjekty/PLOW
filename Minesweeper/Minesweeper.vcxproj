@@ -139,10 +139,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="io.cpp" />
-    <ClCompile Include="logic.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="ui.cpp" />
+    <ClCompile Include="io.c" />
+    <ClCompile Include="logic.c" />
+    <ClCompile Include="main.c" />
+    <ClCompile Include="ui.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="io.h" />
