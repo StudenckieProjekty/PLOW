@@ -1,4 +1,5 @@
 #include "ui.h"
+#include "io.h"
 #include <stdio.h>
 
 void initAllegro() {
@@ -78,8 +79,11 @@ void drawMenu(struct board* board, ALLEGRO_BITMAP* backgroundImage, ALLEGRO_BITM
     drawButton(quitButton, mouseState.x, mouseState.y);
 }
 
-void handleMenuClick(struct board* board, int mouseButton, float mouseX, float mouseY, struct UIButton* playButton, struct UIButton* quitButton) {
+void handleMenuClick(struct board* board, int mouseButton, float mouseX, float mouseY, struct UIButton* playButton, struct UIButton* quitButton, bool* bIsFirstClick) {
     if (mouseButton == 1 && bIsMouseWithinButton(mouseX, mouseY, playButton)) {
+        if (loadGameFromJson(board)) {
+            *bIsFirstClick = false;
+        }
         board->state = Running;
     }
     else if (mouseButton == 1 && bIsMouseWithinButton(mouseX, mouseY, quitButton)) {

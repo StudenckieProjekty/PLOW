@@ -25,7 +25,7 @@ void drawBackground(ALLEGRO_BITMAP* backgroundImage);
 
 void drawMenu(struct board* board, ALLEGRO_BITMAP* backgroundImage, ALLEGRO_BITMAP* titleImage, struct UIButton* playButton, struct UIButton* quitButton);
 
-void handleMenuClick(struct board* board, int mouseButton, float mouseX, float mouseY, struct UIButton* playButton, struct UIButton* quitButton);
+void handleMenuClick(struct board* board, int mouseButton, float mouseX, float mouseY, struct UIButton* playButton, struct UIButton* quitButton, bool* bIsFirstClick);
 
 void drawBoard(struct board* board, ALLEGRO_BITMAP* backgroundImage, ALLEGRO_BITMAP* hiddenTile, ALLEGRO_BITMAP* revealedTiles[], ALLEGRO_BITMAP* questionTile, ALLEGRO_BITMAP* flaggedTile, ALLEGRO_BITMAP* mineTile, ALLEGRO_BITMAP* wonText, ALLEGRO_BITMAP* lostText, ALLEGRO_BITMAP* subMessage, ALLEGRO_BITMAP* clockTile, ALLEGRO_FONT* pixelFont);
 

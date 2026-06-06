@@ -139,12 +139,14 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="cJSON.c" />
     <ClCompile Include="io.c" />
     <ClCompile Include="logic.c" />
     <ClCompile Include="main.c" />
     <ClCompile Include="ui.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="cJSON.h" />
     <ClInclude Include="io.h" />
     <ClInclude Include="logic.h" />
     <ClInclude Include="resource.h" />

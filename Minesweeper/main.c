@@ -1,5 +1,6 @@
 #include "logic.h"
 #include "ui.h"
+#include "io.h"
 #include <stdlib.h>
 #include <time.h>
 
@@ -60,12 +61,15 @@ int main() {
         ALLEGRO_EVENT event;
         while (al_get_next_event(eventQueue, &event)) {
             if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
+                if (gameBoard->state == Running && !bIsFirstClick) {
+                    saveGameToJson(gameBoard);
+                }
                 gameBoard->state = Exit;
             }
             else if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
                 switch (gameBoard->state) {
                     case Menu:
-                        handleMenuClick(gameBoard, event.mouse.button, event.mouse.x, event.mouse.y, &playButton, &quitButton);
+                        handleMenuClick(gameBoard, event.mouse.button, event.mouse.x, event.mouse.y, &playButton, &quitButton, &bIsFirstClick);
                         break;
 
                     case Running:
