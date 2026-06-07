@@ -10,6 +10,8 @@ int main() {
     srand(time(NULL));
 
     ALLEGRO_DISPLAY* display = al_create_display(SCREEN_WIDTH, SCREEN_HEIGHT);
+    al_set_window_title(display, "Minesweeper: Low-Level Edition");
+
     ALLEGRO_BITMAP* icon = al_load_bitmap("assets/images/icon.png");
     ALLEGRO_BITMAP* background = al_load_bitmap("assets/images/background.png");
     ALLEGRO_BITMAP* title = al_load_bitmap("assets/images/title.png");
