@@ -3,6 +3,23 @@
 #include "io.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
+
+void writeLog(const char* message) {
+    time_t timeInSeconds = time(NULL);
+    struct tm* timeInfo = localtime(&timeInSeconds);
+
+    char timeText[24];
+    strftime(timeText, sizeof(timeText), "%Y-%m-%d %H:%M:%S", timeInfo);
+
+    printf("[%s] %s\n", timeText, message);
+
+    FILE* fileToSave = fopen("game.log", "a");
+    if (fileToSave != NULL) {
+        fprintf(fileToSave, "[%s] %s\n", timeText, message);
+        fclose(fileToSave);
+    }
+}
 
 void saveGameToJson(struct board* board) {
     cJSON* json = cJSON_CreateObject();
@@ -35,6 +52,10 @@ void saveGameToJson(struct board* board) {
     if (fileToSave != NULL) {
         fprintf(fileToSave, "%s", jsonString);
         fclose(fileToSave);
+        writeLog("Saved the game board info to save.json.");
+    }
+    else {
+        writeLog("Could not save the game board info to save.json.");
     }
 
     cJSON_free(jsonString);
@@ -44,6 +65,7 @@ void saveGameToJson(struct board* board) {
 bool loadGameFromJson(struct board* board) {
     FILE* fileToLoad = fopen("save.json", "r");
     if (fileToLoad == NULL) {
+        writeLog("The save.json file was not found.");
         return false;
     }
 
@@ -53,6 +75,7 @@ bool loadGameFromJson(struct board* board) {
 
     if (fileSize <= 0) {
         fclose(fileToLoad);
+        writeLog("The save.json file is empty.");
         return false;
     }
 
@@ -70,6 +93,7 @@ bool loadGameFromJson(struct board* board) {
     free(fileContent);
 
     if (json == NULL) {
+        writeLog("Could not properly read the save.json file.");
         return false;
     }
 
@@ -101,6 +125,7 @@ bool loadGameFromJson(struct board* board) {
     cJSON_Delete(json);
 
     remove("save.json");
+    writeLog("Loaded game board info from save.json and removed the file.");
 
     return true;
 }

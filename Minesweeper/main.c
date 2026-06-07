@@ -36,6 +36,8 @@ int main() {
 
     al_set_display_icon(display, icon);
 
+    writeLog("Loaded game assets.");
+
     bool bIsFirstClick = true;
 
     struct board* gameBoard = (struct board*)malloc(sizeof(struct board));
@@ -44,12 +46,12 @@ int main() {
     }
     createBoard(gameBoard);
 
-    float titleHeight = al_get_bitmap_height(title) * 0.5f;
-    float playY = 15.0f + titleHeight;
-    float quitY = playY + (al_get_bitmap_height(playButtonImage) * 0.3f) + 30.0f;
+    float titleHeight = al_get_bitmap_height(title) * 0.5;
+    float playY = 15 + titleHeight;
+    float quitY = playY + (al_get_bitmap_height(playButtonImage) * 0.3) + 30;
 
-    struct UIButton playButton = createCenteredButton(playButtonImage, playButtonSelected, playY, 0.3f);
-    struct UIButton quitButton = createCenteredButton(quitButtonImage, quitButtonSelected, quitY, 0.3f);
+    struct UIButton playButton = createCenteredButton(playButtonImage, playButtonSelected, playY, 0.3);
+    struct UIButton quitButton = createCenteredButton(quitButtonImage, quitButtonSelected, quitY, 0.3);
 
     ALLEGRO_EVENT_QUEUE* eventQueue = al_create_event_queue();
     al_register_event_source(eventQueue, al_get_display_event_source(display));
@@ -64,6 +66,7 @@ int main() {
                 if (gameBoard->state == Running && !bIsFirstClick) {
                     saveGameToJson(gameBoard);
                 }
+                writeLog("Closing the game...\n");
                 gameBoard->state = Exit;
             }
             else if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
@@ -93,7 +96,7 @@ int main() {
 
         if (gameBoard->timeCounter < 9999 && gameBoard->state == Running && !bIsFirstClick) {
             gameBoard->frameCounter += 1;
-            if (gameBoard->frameCounter >= 24) {
+            if (gameBoard->frameCounter >= FPS) {
                 gameBoard->timeCounter += 1;
                 gameBoard->frameCounter = 0;
             }
@@ -112,7 +115,7 @@ int main() {
         }
 
         al_flip_display();
-        al_rest(1.0 / 24.0);
+        al_rest(1 / FPS);
     }
 
     al_destroy_event_queue(eventQueue);
@@ -138,6 +141,9 @@ int main() {
     al_destroy_display(display);
 
     free(gameBoard);
+
+    writeLog("Unloaded game assets.");
+    writeLog("Closing the game.");
 
     return 0;
 }

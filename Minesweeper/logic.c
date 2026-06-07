@@ -1,4 +1,5 @@
 #include "logic.h"
+#include "io.h"
 #include <stdlib.h>
 #include <time.h>
 
@@ -10,6 +11,7 @@ void setDefaultTileValues(struct board* board) {
 			board->matrix[i][j].adjacentMinesNum = 0;
 		}
 	}
+	writeLog("Set default tile values for the board.");
 }
 
 int getMinesToPlaceNum(struct board* board) {
@@ -29,6 +31,7 @@ void placeMinesOnBoard(struct board* board, int clickedX, int clickedY) {
 			leftToPlace -= 1;
 		}
 	}
+	writeLog("Placed mines on the board.");
 }
 
 int getAdjacentMinesNum(struct board* board, int tileX, int tileY) {
@@ -72,6 +75,7 @@ void createBoard(struct board* board) {
 	board->frameCounter = 0;
 	board->timeCounter = 0;
 	board->state = Menu;
+	writeLog("Board created");
 
 	setDefaultTileValues(board);
 }
@@ -79,6 +83,7 @@ void createBoard(struct board* board) {
 void initBoardAfterFirstClick(struct board* board, int clickedX, int clickedY) {
 	placeMinesOnBoard(board, clickedX, clickedY);
 	setTileNumbers(board);
+	writeLog("Initialized the board after the first click.");
 }
 
 void revealAllMines(struct board* board) {
@@ -90,6 +95,7 @@ void revealAllMines(struct board* board) {
 			board->matrix[i][j].state = Revealed;
 		}
 	}
+	writeLog("Revealed all mines on the board.");
 }
 
 void revealTile(struct board* board, int tileX, int tileY) {
@@ -100,6 +106,7 @@ void revealTile(struct board* board, int tileX, int tileY) {
 	if (board->matrix[tileX][tileY].bHasMine) {
 		revealAllMines(board);
 		board->state = Lost;
+		writeLog("User has lost the game.");
 		return;
 	}
 
@@ -107,6 +114,7 @@ void revealTile(struct board* board, int tileX, int tileY) {
 	board->tilesRevealedNum += 1;
 
 	if (board->width * board->height - board->tilesRevealedNum - board->minesNum == 0) {
+		writeLog("User has won the game.");
 		board->state = Won;
 		return;
 	}

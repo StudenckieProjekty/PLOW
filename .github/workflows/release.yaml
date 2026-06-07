@@ -1,0 +1,87 @@
+name: Build and Release
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+    - name: Pobieranie kodu z repo
+      uses: actions/checkout@v4
+
+    - name: Konfiguracja MSBuild
+      uses: microsoft/setup-msbuild@v2
+
+    - name: Konfiguracja NuGet
+      uses: nuget/setup-nuget@v2
+
+    - name: Packagesy
+      run: nuget restore Minesweeper.sln 
+
+    - name: Kompilowanie
+      run: msbuild Minesweeper.vcxproj /p:Configuration=Release /p:Platform=x64
+
+    - name: Spakowanie do zipa
+      run: |
+        mkdir ReleaseWin
+        cp x64\Release\Minesweeper.exe ReleaseWin\
+        cp x64\Release\*.dll ReleaseWin\
+        cp -r assets ReleaseWin\assets
+        Compress-Archive -Path ReleaseWin\* -DestinationPath Minesweeper_Windows.zip
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: windows-build
+        path: Minesweeper_Windows.zip
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Packagesy
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y liballegro5-dev liballegro-image5-dev liballegro-font5-dev liballegro-ttf5-dev
+
+    - name: Kompilowanie
+      run: gcc main.c logic.c ui.c io.c cJSON.c -o Minesweeper_Linux -O2 -lallegro -lallegro_image -lallegro_font -lallegro_ttf -lm
+
+    - name: Spakowanie do zipa
+      run: |
+        mkdir ReleaseLinux
+        cp Minesweeper_Linux ReleaseLinux/
+        cp -r assets ReleaseLinux/assets
+        cd ReleaseLinux
+        zip -r ../Minesweeper_Linux.zip *
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: linux-build
+        path: Minesweeper_Linux.zip
+
+  publish-release:
+    needs: [build-windows, build-linux]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/download-artifact@v4
+      with:
+        name: windows-build
+
+    - uses: actions/download-artifact@v4
+      with:
+        name: linux-build
+
+    - name: Releasowanie
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: build-${{ github.run_number }}
+        name: "Build #${{ github.run_number }}"
+        body: "Skompilowana gra na Windowsa i Linuxa."
+        files: |
+          Minesweeper_Windows.zip
+          Minesweeper_Linux.zip
+        make_latest: true
