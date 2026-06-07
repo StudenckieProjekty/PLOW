@@ -22,7 +22,7 @@ jobs:
       run: nuget restore Minesweeper\packages.config -PackagesDirectory packages
 
     - name: Kompilowanie
-      run: msbuild Minesweeper\Minesweeper.vcxproj /p:Configuration=Release /p:Platform=x64
+      run: msbuild Minesweeper\Minesweeper.vcxproj /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=v143 /p:Allegro_AddonImage=true /p:Allegro_AddonFont=true /p:Allegro_AddonTTF=true
 
     - name: Spakowanie do zipa
       run: |
@@ -45,7 +45,7 @@ jobs:
     - name: Packagesy
       run: |
         sudo apt-get update
-        sudo apt-get install -y liballegro5-dev liballegro-image5-dev liballegro-font5-dev liballegro-ttf5-dev
+        sudo apt-get install -y liballegro5-dev liballegro-image5-dev liballegro-ttf5-dev
 
     - name: Kompilowanie
       working-directory: Minesweeper
