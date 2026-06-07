@@ -19,17 +19,17 @@ jobs:
       uses: nuget/setup-nuget@v2
 
     - name: Packagesy
-      run: nuget restore Minesweeper.sln 
+      run: nuget restore Minesweeper\packages.config -PackagesDirectory packages
 
     - name: Kompilowanie
-      run: msbuild Minesweeper.vcxproj /p:Configuration=Release /p:Platform=x64
+      run: msbuild Minesweeper\Minesweeper.vcxproj /p:Configuration=Release /p:Platform=x64
 
     - name: Spakowanie do zipa
       run: |
         mkdir ReleaseWin
-        cp x64\Release\Minesweeper.exe ReleaseWin\
-        cp x64\Release\*.dll ReleaseWin\
-        cp -r assets ReleaseWin\assets
+        cp Minesweeper\x64\Release\Minesweeper.exe ReleaseWin\
+        cp Minesweeper\x64\Release\*.dll ReleaseWin\
+        cp -r Minesweeper\assets ReleaseWin\assets
         Compress-Archive -Path ReleaseWin\* -DestinationPath Minesweeper_Windows.zip
 
     - uses: actions/upload-artifact@v4
@@ -48,13 +48,14 @@ jobs:
         sudo apt-get install -y liballegro5-dev liballegro-image5-dev liballegro-font5-dev liballegro-ttf5-dev
 
     - name: Kompilowanie
+      working-directory: Minesweeper
       run: gcc main.c logic.c ui.c io.c cJSON.c -o Minesweeper_Linux -O2 -lallegro -lallegro_image -lallegro_font -lallegro_ttf -lm
 
     - name: Spakowanie do zipa
       run: |
         mkdir ReleaseLinux
-        cp Minesweeper_Linux ReleaseLinux/
-        cp -r assets ReleaseLinux/assets
+        cp Minesweeper/Minesweeper_Linux ReleaseLinux/
+        cp -r Minesweeper/assets ReleaseLinux/assets
         cd ReleaseLinux
         zip -r ../Minesweeper_Linux.zip *
 
