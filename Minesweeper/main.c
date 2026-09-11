@@ -22,6 +22,7 @@ int main() {
     ALLEGRO_BITMAP* playButtonSelected = al_load_bitmap("assets/images/play_sel.png");
     ALLEGRO_BITMAP* quitButtonImage = al_load_bitmap("assets/images/quit.png");
     ALLEGRO_BITMAP* quitButtonSelected = al_load_bitmap("assets/images/quit_sel.png");
+    ALLEGRO_BITMAP* selection = al_load_bitmap("assets/images/tiles/select.png");
     ALLEGRO_BITMAP* hiddenTile = al_load_bitmap("assets/images/tiles/barrel_bottom_spruce.png");
     ALLEGRO_BITMAP* questionTile = al_load_bitmap("assets/images/tiles/barrel_bottom_spruce_qm.png");
     ALLEGRO_BITMAP* flaggedTile = al_load_bitmap("assets/images/tiles/barrel_bottom_spruce_flag.png");
@@ -112,7 +113,7 @@ int main() {
             case Running:
             case Won:
             case Lost:
-                drawBoard(gameBoard, background, hiddenTile, revealedTiles, questionTile, flaggedTile, mineTile, wonText, lostText, subMessage, clockTile, pixelFont);
+                drawBoard(gameBoard, background, selection, hiddenTile, revealedTiles, questionTile, flaggedTile, mineTile, wonText, lostText, subMessage, clockTile, pixelFont);
                 break;
         }
 

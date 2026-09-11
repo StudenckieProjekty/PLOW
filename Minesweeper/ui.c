@@ -93,7 +93,7 @@ void handleMenuClick(struct board* board, int mouseButton, float mouseX, float m
     }
 }
 
-void drawBoard(struct board* board, ALLEGRO_BITMAP* backgroundImage, ALLEGRO_BITMAP* hiddenTile, ALLEGRO_BITMAP* revealedTiles[], ALLEGRO_BITMAP* questionTile, ALLEGRO_BITMAP* flaggedTile, ALLEGRO_BITMAP* mineTile, ALLEGRO_BITMAP* wonText, ALLEGRO_BITMAP* lostText, ALLEGRO_BITMAP* subMessage, ALLEGRO_BITMAP* clockTile, ALLEGRO_FONT* pixelFont) {
+void drawBoard(struct board* board, ALLEGRO_BITMAP* backgroundImage, ALLEGRO_BITMAP* selection, ALLEGRO_BITMAP* hiddenTile, ALLEGRO_BITMAP* revealedTiles[], ALLEGRO_BITMAP* questionTile, ALLEGRO_BITMAP* flaggedTile, ALLEGRO_BITMAP* mineTile, ALLEGRO_BITMAP* wonText, ALLEGRO_BITMAP* lostText, ALLEGRO_BITMAP* subMessage, ALLEGRO_BITMAP* clockTile, ALLEGRO_FONT* pixelFont) {
     drawBackground(backgroundImage);
 
     float boardWidthPx = board->width * TILE_SIZE;
@@ -101,6 +101,16 @@ void drawBoard(struct board* board, ALLEGRO_BITMAP* backgroundImage, ALLEGRO_BIT
 
     float startX = (SCREEN_WIDTH - boardWidthPx) / 2;
     float startY = SCREEN_HEIGHT - boardHeightPx - 20;
+
+    ALLEGRO_MOUSE_STATE mouseState;
+    al_get_mouse_state(&mouseState);
+
+    int mouseI = -1, mouseJ = -1;
+    if (mouseState.x >= startX && mouseState.x < startX + boardWidthPx && mouseState.y >= startY && mouseState.y < startY + boardHeightPx) {
+
+        mouseJ = (mouseState.x - startX) / TILE_SIZE;
+        mouseI = (mouseState.y - startY) / TILE_SIZE;
+    }
 
     float width = al_get_bitmap_width(hiddenTile);
     float height = al_get_bitmap_height(hiddenTile);
@@ -138,6 +148,12 @@ void drawBoard(struct board* board, ALLEGRO_BITMAP* backgroundImage, ALLEGRO_BIT
 
             if (textureToDraw != NULL) {
                 al_draw_scaled_bitmap(textureToDraw, 0, 0, width, height, currentX, currentY, TILE_SIZE, TILE_SIZE, 0);
+            }
+
+            if (board->state == Running && i == mouseI && j == mouseJ && board->matrix[i][j].state != Revealed) {
+                float width = al_get_bitmap_width(selection);
+                float height = al_get_bitmap_height(selection);
+                al_draw_scaled_bitmap(selection, 0, 0, width, height, currentX, currentY, TILE_SIZE, TILE_SIZE, 0);
             }
         }
     }
